@@ -119,9 +119,9 @@ namespace app_act.Bizcs.BLL
         /// <summary>
         /// 分页获取数据列表
         /// </summary>
-        public DataSet GetListByPage(string strWhere, string orderby, int startIndex, int endIndex)
+        public DataSet GetListByPage(string strWhere, string subStrWhere, string orderby, int startIndex, int endIndex)
         {
-            return dal.GetListByPage(strWhere, orderby, startIndex, endIndex);
+            return dal.GetListByPage(strWhere, subStrWhere, orderby, startIndex, endIndex);
         }
         /// <summary>
         /// 分页获取数据列表

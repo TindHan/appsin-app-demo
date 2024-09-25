@@ -39,8 +39,9 @@ namespace app_act.Common
         {
             string appSID = "52021156";
             string appSecret = "wGmt9o5ucmzLpszm";
-            string pubkey = "MEgCQQDOGE80bY9nK8Akxw+CXmsHqF7y/kPMbAim/M9hm3w0TN/h1cFONdo7OaWF3hBRAaTYwbdTTiTQjvgi7j31ExbdAgMBAAE=";
             string nowTime = DateTime.Now.ToString("yyyyMMddhh");
+
+            string pubkey = "MEgCQQDOGE80bY9nK8Akxw+CXmsHqF7y/kPMbAim/M9hm3w0TN/h1cFONdo7OaWF3hBRAaTYwbdTTiTQjvgi7j31ExbdAgMBAAE=";
 
             string aukey = appSID + CryptRSA.RsaHelper.Encrypt(pubkey, appSID + ";" + appSecret + ";" + nowTime);
 

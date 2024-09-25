@@ -322,22 +322,23 @@ namespace app_act.Bizcs.DAL
         {
             StringBuilder strSql = new StringBuilder();
             strSql.Append("SELECT * FROM ( ");
-            strSql.Append(" SELECT ROW_NUMBER() OVER (");
+            strSql.Append(" SELECT *, ROW_NUMBER() OVER (");
             if (!string.IsNullOrEmpty(orderby.Trim()))
             {
-                strSql.Append("order by T." + orderby);
+                strSql.Append("order by " + orderby);
             }
             else
             {
-                strSql.Append("order by T.psnPK desc");
+                strSql.Append("order by psnPK desc");
             }
-            strSql.Append(")AS Row, T.*  from act_psnmain T ");
+            strSql.Append(")AS rnum from act_psnmain ");
             if (!string.IsNullOrEmpty(strWhere.Trim()))
             {
                 strSql.Append(" WHERE " + strWhere);
             }
-            strSql.Append(" ) TT");
-            strSql.AppendFormat(" WHERE TT.Row between {0} and {1}", startIndex, endIndex);
+            strSql.Append(" ) as TT");
+            strSql.AppendFormat(" WHERE rnum between {0} and {1}", startIndex, endIndex);
+
             return DbHelperSQL.Query(strSql.ToString());
         }
 

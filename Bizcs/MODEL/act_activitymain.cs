@@ -5,6 +5,7 @@
         public act_activitymain()
         { }
         #region Model
+        private int _key;
         private int _actid;
         private string _actname;
         private string _actdesc;
@@ -25,6 +26,12 @@
         /// <summary>
         /// 
         /// </summary>
+        /// 
+        public int key
+        {
+            set { _key = value; }
+            get { return _key; }
+        }
         public int actID
         {
             set { _actid = value; }

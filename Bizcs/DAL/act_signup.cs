@@ -154,7 +154,7 @@ namespace app_act.Bizcs.DAL
         {
 
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("select  top 1 signID,actID,psnPK,signTime,isPay,isConfirm,signStatus from act_signup ");
+            strSql.Append("select  signID,actID,psnPK,signTime,isPay,isConfirm,signStatus from act_signup ");
             strSql.Append(" where signID=@signID");
             MySqlParameter[] parameters = {
                     new MySqlParameter("@signID", MySqlDbType.Int32,4)
@@ -274,26 +274,36 @@ namespace app_act.Bizcs.DAL
         /// <summary>
         /// 分页获取数据列表
         /// </summary>
-        public DataSet GetListByPage(string strWhere, string orderby, int startIndex, int endIndex)
+        public DataSet GetListByPage(string strWhere, string subStrWhere, string orderby, int startIndex, int endIndex)
         {
             StringBuilder strSql = new StringBuilder();
             strSql.Append("SELECT * FROM ( ");
-            strSql.Append(" SELECT ROW_NUMBER() OVER (");
+            strSql.Append(" SELECT *,signID as `key`, ");
+            strSql.Append(" (select actName from act_activityMain where act_activityMain.actID=act_signup.actID) as actName,");
+            strSql.Append(" (select actStartTime from act_activityMain where act_activityMain.actID=act_signup.actID) as startTime,");
+            strSql.Append(" (select actEndTime from act_activityMain where act_activityMain.actID=act_signup.actID) as endTime,");
+            strSql.Append(" (select actAddr from act_activityMain where act_activityMain.actID=act_signup.actID) as address,");
+            strSql.Append("  ROW_NUMBER() OVER (");
             if (!string.IsNullOrEmpty(orderby.Trim()))
             {
-                strSql.Append("order by T." + orderby);
+                strSql.Append("order by " + orderby);
             }
             else
             {
-                strSql.Append("order by T.signID desc");
+                strSql.Append("order by signID desc");
             }
-            strSql.Append(")AS Row, T.*  from act_signup T ");
+            strSql.Append(")AS rnum from act_signup ");
             if (!string.IsNullOrEmpty(strWhere.Trim()))
             {
                 strSql.Append(" WHERE " + strWhere);
             }
-            strSql.Append(" ) TT");
-            strSql.AppendFormat(" WHERE TT.Row between {0} and {1}", startIndex, endIndex);
+            strSql.Append(" ) as TT");
+            strSql.AppendFormat(" WHERE rnum between {0} and {1}", startIndex, endIndex);
+            if (!string.IsNullOrEmpty(subStrWhere.Trim()))
+            {
+                strSql.Append(" " + subStrWhere);
+            }
+
             return DbHelperSQL.Query(strSql.ToString());
         }
         #endregion  BasicMethod

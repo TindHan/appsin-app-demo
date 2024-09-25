@@ -204,7 +204,7 @@ namespace app_act.Bizcs.DAL
         {
 
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("select  top 1 actID,actName,actDesc,actStartTime,actEndTime,signupStartTime,signupEndTime,actType,actWay,actUrl,actAddr,actMemo1,actMemo2,actMemo3,actMemo4,actMemo5,actStatus from act_activitymain ");
+            strSql.Append("select actID,actName,actDesc,actStartTime,actEndTime,signupStartTime,signupEndTime,actType,actWay,actUrl,actAddr,actMemo1,actMemo2,actMemo3,actMemo4,actMemo5,actStatus from act_activitymain ");
             strSql.Append(" where actID=@actID");
             MySqlParameter[] parameters = {
                     new MySqlParameter("@actID", MySqlDbType.Int32,4)
@@ -367,23 +367,23 @@ namespace app_act.Bizcs.DAL
         public DataSet GetListByPage(string strWhere, string orderby, int startIndex, int endIndex)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("SELECT * FROM ( ");
-            strSql.Append(" SELECT ROW_NUMBER() OVER (");
+            strSql.Append("SELECT *,actID AS `key` FROM ( ");
+            strSql.Append(" SELECT *, ROW_NUMBER() OVER (");
             if (!string.IsNullOrEmpty(orderby.Trim()))
             {
-                strSql.Append("order by T." + orderby);
+                strSql.Append("order by " + orderby);
             }
             else
             {
-                strSql.Append("order by T.actID desc");
+                strSql.Append("order by actID desc");
             }
-            strSql.Append(")AS Row, T.*  from act_activitymain T ");
+            strSql.Append(")AS rnum from act_activitymain ");
             if (!string.IsNullOrEmpty(strWhere.Trim()))
             {
                 strSql.Append(" WHERE " + strWhere);
             }
-            strSql.Append(" ) TT");
-            strSql.AppendFormat(" WHERE TT.Row between {0} and {1}", startIndex, endIndex);
+            strSql.Append(" ) as TT");
+            strSql.AppendFormat(" WHERE rnum between {0} and {1}", startIndex, endIndex);
             return DbHelperSQL.Query(strSql.ToString());
         }
 
