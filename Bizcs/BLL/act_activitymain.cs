@@ -126,7 +126,10 @@ namespace app_act.Bizcs.BLL
 
         #endregion  BasicMethod
         #region  ExtensionMethod
-
+        public DataSet exportList(string strWhere, string orderby)
+        {
+            return dal.exportList(strWhere,orderby);
+        }
         #endregion  ExtensionMethod
     }
 }

@@ -116,13 +116,7 @@ namespace app_act.Bizcs.BLL
         {
             return dal.GetRecordCount(strWhere);
         }
-        /// <summary>
-        /// 分页获取数据列表
-        /// </summary>
-        public DataSet GetListByPage(string strWhere, string subStrWhere, string orderby, int startIndex, int endIndex)
-        {
-            return dal.GetListByPage(strWhere, subStrWhere, orderby, startIndex, endIndex);
-        }
+
         /// <summary>
         /// 分页获取数据列表
         /// </summary>
@@ -133,6 +127,17 @@ namespace app_act.Bizcs.BLL
 
         #endregion  BasicMethod
         #region  ExtensionMethod
+        public DataSet exportList(string strWhere)
+        {
+            return dal.exportList(strWhere);
+        }
+        /// <summary>
+        /// 分页获取数据列表
+        /// </summary>
+        public DataSet GetListByPage(string strWhere, string subStrWhere, string orderby, int startIndex, int endIndex)
+        {
+            return dal.GetListByPage(strWhere, subStrWhere, orderby, startIndex, endIndex);
+        }
 
         #endregion  ExtensionMethod
     }

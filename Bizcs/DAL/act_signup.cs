@@ -34,23 +34,25 @@ namespace app_act.Bizcs.DAL
         {
             StringBuilder strSql = new StringBuilder();
             strSql.Append("insert into act_signup(");
-            strSql.Append("actID,psnPK,signTime,isPay,isConfirm,signStatus)");
+            strSql.Append("actID,psnPK,signTime,signWay,isPay,isConfirm,signStatus)");
             strSql.Append(" values (");
-            strSql.Append("@actID,@psnPK,@signTime,@isPay,@isConfirm,@signStatus)");
+            strSql.Append("@actID,@psnPK,@signTime,@signWay,@isPay,@isConfirm,@signStatus)");
             strSql.Append(";select @@IDENTITY");
             MySqlParameter[] parameters = {
                     new MySqlParameter("@actID", MySqlDbType.Int32,4),
                     new MySqlParameter("@psnPK", MySqlDbType.VarChar,50),
                     new MySqlParameter("@signTime", MySqlDbType.DateTime),
+                    new MySqlParameter("@signWay", MySqlDbType.VarChar,50),
                     new MySqlParameter("@isPay", MySqlDbType.Int32,4),
                     new MySqlParameter("@isConfirm", MySqlDbType.Int32,4),
                     new MySqlParameter("@signStatus", MySqlDbType.Int32,4)};
             parameters[0].Value = model.actID;
             parameters[1].Value = model.psnPK;
             parameters[2].Value = model.signTime;
-            parameters[3].Value = model.isPay;
-            parameters[4].Value = model.isConfirm;
-            parameters[5].Value = model.signStatus;
+            parameters[3].Value = model.signWay;
+            parameters[4].Value = model.isPay;
+            parameters[5].Value = model.isConfirm;
+            parameters[6].Value = model.signStatus;
 
             object obj = DbHelperSQL.GetSingle(strSql.ToString(), parameters);
             if (obj == null)
@@ -72,6 +74,7 @@ namespace app_act.Bizcs.DAL
             strSql.Append("actID=@actID,");
             strSql.Append("psnPK=@psnPK,");
             strSql.Append("signTime=@signTime,");
+            strSql.Append("signWay=@signWay,");
             strSql.Append("isPay=@isPay,");
             strSql.Append("isConfirm=@isConfirm,");
             strSql.Append("signStatus=@signStatus");
@@ -80,6 +83,7 @@ namespace app_act.Bizcs.DAL
                     new MySqlParameter("@actID", MySqlDbType.Int32,4),
                     new MySqlParameter("@psnPK", MySqlDbType.VarChar,50),
                     new MySqlParameter("@signTime", MySqlDbType.DateTime),
+                    new MySqlParameter("@signWay", MySqlDbType.VarChar,50),
                     new MySqlParameter("@isPay", MySqlDbType.Int32,4),
                     new MySqlParameter("@isConfirm", MySqlDbType.Int32,4),
                     new MySqlParameter("@signStatus", MySqlDbType.Int32,4),
@@ -87,10 +91,11 @@ namespace app_act.Bizcs.DAL
             parameters[0].Value = model.actID;
             parameters[1].Value = model.psnPK;
             parameters[2].Value = model.signTime;
-            parameters[3].Value = model.isPay;
-            parameters[4].Value = model.isConfirm;
-            parameters[5].Value = model.signStatus;
-            parameters[6].Value = model.signID;
+            parameters[3].Value = model.signWay;
+            parameters[4].Value = model.isPay;
+            parameters[5].Value = model.isConfirm;
+            parameters[6].Value = model.signStatus;
+            parameters[7].Value = model.signID;
 
             int rows = DbHelperSQL.ExecuteSql(strSql.ToString(), parameters);
             if (rows > 0)
@@ -154,7 +159,7 @@ namespace app_act.Bizcs.DAL
         {
 
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("select  signID,actID,psnPK,signTime,isPay,isConfirm,signStatus from act_signup ");
+            strSql.Append("select  signID,actID,psnPK,signTime,signWay,isPay,isConfirm,signStatus from act_signup ");
             strSql.Append(" where signID=@signID");
             MySqlParameter[] parameters = {
                     new MySqlParameter("@signID", MySqlDbType.Int32,4)
@@ -198,6 +203,10 @@ namespace app_act.Bizcs.DAL
                 {
                     model.signTime = DateTime.Parse(row["signTime"].ToString());
                 }
+                if (row["signWay"] != null)
+                {
+                    model.psnPK = row["signWay"].ToString();
+                }
                 if (row["isPay"] != null && row["isPay"].ToString() != "")
                 {
                     model.isPay = int.Parse(row["isPay"].ToString());
@@ -220,7 +229,7 @@ namespace app_act.Bizcs.DAL
         public DataSet GetList(string strWhere)
         {
             StringBuilder strSql = new StringBuilder();
-            strSql.Append("select signID,actID,psnPK,signTime,isPay,isConfirm,signStatus ");
+            strSql.Append("select signID,actID,psnPK,signTime,signWay,isPay,isConfirm,signStatus ");
             strSql.Append(" FROM act_signup ");
             if (strWhere.Trim() != "")
             {
@@ -240,7 +249,7 @@ namespace app_act.Bizcs.DAL
             {
                 strSql.Append(" top " + Top.ToString());
             }
-            strSql.Append(" signID,actID,psnPK,signTime,isPay,isConfirm,signStatus ");
+            strSql.Append(" signID,actID,psnPK,signTime,signWay,isPay,isConfirm,signStatus ");
             strSql.Append(" FROM act_signup ");
             if (strWhere.Trim() != "")
             {
@@ -271,9 +280,35 @@ namespace app_act.Bizcs.DAL
                 return Convert.ToInt32(obj);
             }
         }
+
+        #endregion  BasicMethod
+        #region  ExtensionMethod
         /// <summary>
         /// 分页获取数据列表
         /// </summary>
+        /// 
+        public DataSet exportList(string strWhere)
+        {
+            StringBuilder strSql = new StringBuilder();
+            strSql.Append(" SELECT ");
+            strSql.Append(" (select actName from act_activityMain where act_activityMain.actID=act_signup.actID) as activityName,");
+            strSql.Append(" (select unitName from act_psnMain where act_psnMain.psnPk=act_signup.psnPk) as unitName,");
+            strSql.Append(" (select deptName from act_psnMain where act_psnMain.psnPk=act_signup.psnPk) as deptName,");
+            strSql.Append(" (select postName from act_psnMain where act_psnMain.psnPk=act_signup.psnPk) as postName,");
+            strSql.Append(" (select psnName from act_psnMain where act_psnMain.psnPk=act_signup.psnPk) as psnName,");
+            strSql.Append(" signTime,signWay,isPay,isConfirm");
+            strSql.Append("  from act_signup ");
+            if (!string.IsNullOrEmpty(strWhere.Trim()))
+            {
+                strSql.Append(" WHERE " + strWhere);
+            }
+
+            return DbHelperSQL.Query(strSql.ToString());
+        }
+        /// <summary>
+        /// 分页获取数据列表
+        /// </summary>
+        /// 
         public DataSet GetListByPage(string strWhere, string subStrWhere, string orderby, int startIndex, int endIndex)
         {
             StringBuilder strSql = new StringBuilder();
@@ -283,6 +318,10 @@ namespace app_act.Bizcs.DAL
             strSql.Append(" (select actStartTime from act_activityMain where act_activityMain.actID=act_signup.actID) as startTime,");
             strSql.Append(" (select actEndTime from act_activityMain where act_activityMain.actID=act_signup.actID) as endTime,");
             strSql.Append(" (select actAddr from act_activityMain where act_activityMain.actID=act_signup.actID) as address,");
+            strSql.Append(" (select unitName from act_psnMain where act_psnMain.psnPk=act_signup.psnPk) as unitName,");
+            strSql.Append(" (select deptName from act_psnMain where act_psnMain.psnPk=act_signup.psnPk) as deptName,");
+            strSql.Append(" (select postName from act_psnMain where act_psnMain.psnPk=act_signup.psnPk) as postName,");
+            strSql.Append(" (select psnName from act_psnMain where act_psnMain.psnPk=act_signup.psnPk) as psnName,");
             strSql.Append("  ROW_NUMBER() OVER (");
             if (!string.IsNullOrEmpty(orderby.Trim()))
             {
@@ -306,9 +345,6 @@ namespace app_act.Bizcs.DAL
 
             return DbHelperSQL.Query(strSql.ToString());
         }
-        #endregion  BasicMethod
-        #region  ExtensionMethod
-
         #endregion  ExtensionMethod
     }
 }

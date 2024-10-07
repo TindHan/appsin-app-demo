@@ -7,6 +7,7 @@
         private int? _actid;
         private string _psnpk;
         private DateTime? _signtime;
+        private string _signway;
         private int? _ispay;
         private int? _isconfirm;
         private int? _signstatus;
@@ -42,6 +43,14 @@
         {
             set { _signtime = value; }
             get { return _signtime; }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string signWay
+        {
+            set { _signway = value; }
+            get { return _signway; }
         }
         /// <summary>
         /// 

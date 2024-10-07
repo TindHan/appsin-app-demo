@@ -32,7 +32,12 @@ namespace app_act.Midcs
         public DateTime endTime { get; set; }
         public string address { get; set; }
         public string psnPK { get; set; }
+        public string psnName { get; set; }
+        public string unitName { get; set; }
+        public string deptName { get; set; }
+        public string postName { get; set; }
         public DateTime signTime { get; set; }
+        public string signWay { get; set; }
         public int isPay { get; set; }
         public int isConfirm { get; set; }
         public int signStatus { get; set; }

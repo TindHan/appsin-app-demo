@@ -389,7 +389,24 @@ namespace app_act.Bizcs.DAL
 
         #endregion  BasicMethod
         #region  ExtensionMethod
-
+        public DataSet exportList(string strWhere, string orderby)
+        {
+            StringBuilder strSql = new StringBuilder();
+            strSql.Append("select actName as activityName,actDesc as activityDescription," +
+                "date_format(actStartTime,'%Y-%m-%d %H:%I') as activityStartTime,date_format(actEndTime,'%Y-%m-%d %H:%I') as activityEndTime," +
+                "date_format(signupStartTime,'%Y-%m-%d %H:%I') as signupStartTime,date_format(signupEndTime,'%Y-%m-%d %H:%I') as signupEndTime ," +
+                "actType as type,actWay as way,actAddr as address,actMemo1 as description ");
+            strSql.Append(" FROM act_activitymain ");
+            if (strWhere.Trim() != "")
+            {
+                strSql.Append(" where " + strWhere);
+            }
+            if (!string.IsNullOrEmpty(orderby.Trim()))
+            {
+                strSql.Append(" order by " + orderby);
+            }
+            return DbHelperSQL.Query(strSql.ToString());
+        }
         #endregion  ExtensionMethod
     }
 }
