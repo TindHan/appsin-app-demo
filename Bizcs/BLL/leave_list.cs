@@ -3,24 +3,24 @@ using System.Data;
 
 namespace app_act.Bizcs.BLL
 {
-    public class act_psnmain
+    public class leave_list
     {
-        private readonly Bizcs.DAL.act_psnmain dal = new Bizcs.DAL.act_psnmain();
-        public act_psnmain()
+        private readonly Bizcs.DAL.leave_list dal = new Bizcs.DAL.leave_list();
+        public leave_list()
         { }
         #region  BasicMethod
         /// <summary>
         /// 是否存在该记录
         /// </summary>
-        public bool Exists(string psnPK)
+        public bool Exists(int leaveID)
         {
-            return dal.Exists(psnPK);
+            return dal.Exists(leaveID);
         }
 
         /// <summary>
         /// 增加一条数据
         /// </summary>
-        public bool Add(Bizcs.Model.act_psnmain model)
+        public int Add(Bizcs.Model.leave_list model)
         {
             return dal.Add(model);
         }
@@ -28,7 +28,7 @@ namespace app_act.Bizcs.BLL
         /// <summary>
         /// 更新一条数据
         /// </summary>
-        public bool Update(Bizcs.Model.act_psnmain model)
+        public bool Update(Bizcs.Model.leave_list model)
         {
             return dal.Update(model);
         }
@@ -36,26 +36,26 @@ namespace app_act.Bizcs.BLL
         /// <summary>
         /// 删除一条数据
         /// </summary>
-        public bool Delete(string psnPK)
+        public bool Delete(int leaveID)
         {
 
-            return dal.Delete(psnPK);
+            return dal.Delete(leaveID);
         }
         /// <summary>
         /// 删除一条数据
         /// </summary>
-        public bool DeleteList(string psnPKlist)
+        public bool DeleteList(string leaveIDlist)
         {
-            return dal.DeleteList(psnPKlist);
+            return dal.DeleteList(leaveIDlist);
         }
 
         /// <summary>
         /// 得到一个对象实体
         /// </summary>
-        public Bizcs.Model.act_psnmain GetModel(string psnPK)
+        public Bizcs.Model.leave_list GetModel(int leaveID)
         {
 
-            return dal.GetModel(psnPK);
+            return dal.GetModel(leaveID);
         }
 
         /// <summary>
@@ -64,11 +64,6 @@ namespace app_act.Bizcs.BLL
         public DataSet GetList(string strWhere)
         {
             return dal.GetList(strWhere);
-        }
-
-        public DataSet GetList(string strWhere, params MySqlParameter[] parms)
-        {
-            return dal.GetList(strWhere, parms);
         }
         /// <summary>
         /// 获得前几行数据
@@ -80,7 +75,7 @@ namespace app_act.Bizcs.BLL
         /// <summary>
         /// 获得数据列表
         /// </summary>
-        public List<Bizcs.Model.act_psnmain> GetModelList(string strWhere)
+        public List<Bizcs.Model.leave_list> GetModelList(string strWhere)
         {
             DataSet ds = dal.GetList(strWhere);
             return DataTableToList(ds.Tables[0]);
@@ -88,13 +83,13 @@ namespace app_act.Bizcs.BLL
         /// <summary>
         /// 获得数据列表
         /// </summary>
-        public List<Bizcs.Model.act_psnmain> DataTableToList(DataTable dt)
+        public List<Bizcs.Model.leave_list> DataTableToList(DataTable dt)
         {
-            List<Bizcs.Model.act_psnmain> modelList = new List<Bizcs.Model.act_psnmain>();
+            List<Bizcs.Model.leave_list> modelList = new List<Bizcs.Model.leave_list>();
             int rowsCount = dt.Rows.Count;
             if (rowsCount > 0)
             {
-                Bizcs.Model.act_psnmain model;
+                Bizcs.Model.leave_list model;
                 for (int n = 0; n < rowsCount; n++)
                 {
                     model = dal.DataRowToModel(dt.Rows[n]);
@@ -129,12 +124,23 @@ namespace app_act.Bizcs.BLL
         {
             return dal.GetListByPage(strWhere, orderby, startIndex, endIndex);
         }
-
         #endregion  BasicMethod
         #region  ExtensionMethod
+        public DataSet GetList(string strWhere, params MySqlParameter[] parms)
+        {
+            return dal.GetList(strWhere, parms);
+        }
         public DataSet GetListByPage(string strWhere, string orderby, int startIndex, int endIndex, params MySqlParameter[] parms)
-        { 
+        {
             return dal.GetListByPage(strWhere, orderby, startIndex, endIndex, parms);
+        }
+        public bool sycnApproveStatus(string leavePK, int approveStatus)
+        {
+            return dal.sycnApproveStatus(leavePK, approveStatus);
+        }
+        public bool sycnLeavePK(string leavePK, int leaveID)
+        {
+            return dal.sycnLeavePK(leavePK, leaveID);
         }
         #endregion  ExtensionMethod
     }

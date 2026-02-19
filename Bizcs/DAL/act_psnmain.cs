@@ -274,6 +274,21 @@ namespace app_act.Bizcs.DAL
         }
 
         /// <summary>
+        /// 获得数据列表
+        /// </summary>
+        public DataSet GetList(string strWhere, params MySqlParameter[] parms)
+        {
+            StringBuilder strSql = new StringBuilder();
+            strSql.Append("select psnPK,psnName,unitPK,deptPK,postPk,unitName,deptName,postName,psnSex,psnCode,updateTime,psnStatus ");
+            strSql.Append(" FROM act_psnmain ");
+            if (strWhere.Trim() != "")
+            {
+                strSql.Append(" where " + strWhere);
+            }
+            return DbHelperSQL.Query(strSql.ToString(), parms);
+        }
+
+        /// <summary>
         /// 获得前几行数据
         /// </summary>
         public DataSet GetList(int Top, string strWhere, string filedOrder)
@@ -344,7 +359,29 @@ namespace app_act.Bizcs.DAL
 
         #endregion  BasicMethod
         #region  ExtensionMethod
+        public DataSet GetListByPage(string strWhere, string orderby, int startIndex, int endIndex, params MySqlParameter[] parms)
+        {
+            StringBuilder strSql = new StringBuilder();
+            strSql.Append("SELECT * FROM ( ");
+            strSql.Append(" SELECT *, ROW_NUMBER() OVER (");
+            if (!string.IsNullOrEmpty(orderby.Trim()))
+            {
+                strSql.Append("order by " + orderby);
+            }
+            else
+            {
+                strSql.Append("order by psnPK desc");
+            }
+            strSql.Append(")AS rnum from act_psnmain ");
+            if (!string.IsNullOrEmpty(strWhere.Trim()))
+            {
+                strSql.Append(" WHERE " + strWhere);
+            }
+            strSql.Append(" ) as TT");
+            strSql.AppendFormat(" WHERE rnum between {0} and {1}", startIndex, endIndex);
 
+            return DbHelperSQL.Query(strSql.ToString(), parms);
+        }
         #endregion  ExtensionMethod
     }
 }

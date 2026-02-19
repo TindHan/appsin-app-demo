@@ -1,18 +1,11 @@
 ﻿using app_act.Bizcs.Model;
-using Microsoft.AspNetCore.Mvc;
-using System.Data;
 using app_act.Midcs;
-using Microsoft.AspNetCore.StaticFiles;
-using System.ComponentModel.DataAnnotations;
-using System.Net;
-using System.Web;
-using System.Net.Http.Headers;
-using System.IO;
+using Microsoft.AspNetCore.Mvc;
+using MySql.Data.MySqlClient;
 using Newtonsoft.Json.Linq;
-using MySqlX.XDevAPI.Common;
+using System.Data;
+using System.Linq;
 using System.Text;
-using System;
-using System.Reflection;
 
 namespace app_act.Controllers
 {
@@ -236,14 +229,36 @@ namespace app_act.Controllers
             {
                 Bizcs.BLL.act_signup signbll = new Bizcs.BLL.act_signup();
 
-                string strWhere1 = reqModel.kw == "" ? "" : " and psnName like '%" + reqModel.kw + "%'";
-                string strWhere2 = reqModel.start == "" && reqModel.end == "" ? "" : " and signTime>='" + reqModel.start + " 00:00:00" + "' and signTime<='" + reqModel.end + " 23:59:59" + "' ";
-                string strWhere3 = reqModel.status == "" ? "" : " and signStatus=" + reqModel.status;
-                string strWhere4 = reqModel.type == "" ? "" : " and actID=" + reqModel.type;
+                StringBuilder strWhere = new StringBuilder();
+                List<MySqlParameter> parms = new List<MySqlParameter>();
+                strWhere.Append(" 1=1 ");
+                if (!string.IsNullOrEmpty(reqModel.kw))
+                {
+                    strWhere.Append(" and psnName like @psnName ");
+                    parms.Add(new MySqlParameter("@psnName", $"%{reqModel.kw}%"));
+                }
+                if (!string.IsNullOrEmpty(reqModel.start) && DateTime.TryParse(reqModel.start, out var st))
+                {
+                    strWhere.Append(" and signTime>= @signTime1");
+                    parms.Add(new MySqlParameter("@signTime1", DateTime.Parse(reqModel.start)));
+                }
+                if (!string.IsNullOrEmpty(reqModel.end) && DateTime.TryParse(reqModel.end, out var et))
+                {
+                    strWhere.Append(" and signTime< @signTime2");
+                    parms.Add(new MySqlParameter("@signTime2", DateTime.Parse(reqModel.end).AddDays(1)));
+                }
+                if (!string.IsNullOrEmpty(reqModel.status))
+                {
+                    strWhere.Append(" and signStatus=@signStatus");
+                    parms.Add(new MySqlParameter("@signStatus", reqModel.status));
+                }
+                if (!string.IsNullOrEmpty(reqModel.type))
+                {
+                    strWhere.Append(" and actID=@actID");
+                    parms.Add(new MySqlParameter("@actID", reqModel.type));
+                }
 
-                string strWhere = " 1=1 " + strWhere1 + strWhere2 + strWhere3 + strWhere4;
-
-                DataSet dsObj = signbll.exportList(strWhere);
+                DataSet dsObj = signbll.exportList(strWhere.ToString(), parms.ToArray());
                 if (dsObj.Tables[0] != null && dsObj.Tables[0].Rows.Count > 0)
                 {
                     string fileInfo = Common.ExcelHelper.DataToExcel(dsObj.Tables[0], "list" + DateTime.Now.ToString("yyyyMMddhhmmss") + ".xlsx", "Sign Up List");
@@ -290,18 +305,44 @@ namespace app_act.Controllers
             {
                 Bizcs.BLL.act_signup signbll = new Bizcs.BLL.act_signup();
 
-                int sIndex = (reqModel.pageIndex - 1) * reqModel.pageSize + 1;
-                int eIndex = reqModel.pageIndex * reqModel.pageSize;
+                int pageIndex = Math.Max(reqModel.pageIndex, 1);
+                int pageSize = Math.Max(reqModel.pageSize, 10);
+                int sIndex = (pageIndex - 1) * pageSize + 1;
+                int eIndex = pageIndex * pageSize;
 
-                string subStrWhere1 = reqModel.kw == "" ? "" : " and psnName like '%" + reqModel.kw + "%'";
-                string strWhere1 = reqModel.start == "" && reqModel.end == "" ? "" : " and signTime>='" + reqModel.start + " 00:00:00" + "' and signTime<='" + reqModel.end + " 23:59:59" + "' ";
-                string strWhere2 = reqModel.status == "" ? "" : " and signStatus=" + reqModel.status;
-                string strWhere3 = reqModel.type == "" ? "" : " and actID=" + reqModel.type;
+                StringBuilder strWhere = new StringBuilder();
+                StringBuilder subStrWhere = new StringBuilder();
+                List<MySqlParameter> parms = new List<MySqlParameter>();
+                strWhere.Append(" 1=1 ");
+                if (!string.IsNullOrEmpty(reqModel.kw))
+                {
+                    subStrWhere.Append(" and psnName like @psnName ");
+                    parms.Add(new MySqlParameter("@psnName", $"%{reqModel.kw}%"));
+                }
+                if (!string.IsNullOrEmpty(reqModel.start) && DateTime.TryParse(reqModel.start, out var st))
+                {
+                    strWhere.Append(" and signTime>= @signTime1");
+                    parms.Add(new MySqlParameter("@signTime1", DateTime.Parse(reqModel.start)));
+                }
+                if (!string.IsNullOrEmpty(reqModel.end) && DateTime.TryParse(reqModel.end, out var et))
+                {
+                    strWhere.Append(" and signTime< @signTime2");
+                    parms.Add(new MySqlParameter("@signTime2", DateTime.Parse(reqModel.end).AddDays(1)));
+                }
+                if (!string.IsNullOrEmpty(reqModel.status))
+                {
+                    strWhere.Append(" and signStatus=@signStatus");
+                    parms.Add(new MySqlParameter("@signStatus", reqModel.status));
+                }
+                if (!string.IsNullOrEmpty(reqModel.type))
+                {
+                    strWhere.Append(" and actID=@actID");
+                    parms.Add(new MySqlParameter("@actID", reqModel.type));
+                }
 
-                string strWhere = " 1=1 " + strWhere1 + strWhere2 + strWhere3;
 
-                DataSet dsPsn = signbll.GetListByPage(strWhere, subStrWhere1, "", sIndex, eIndex);
-                DataSet dsAll = signbll.GetList(strWhere);
+                DataSet dsPsn = signbll.GetListByPage(strWhere.ToString(), subStrWhere.ToString(), "", sIndex, eIndex, parms.ToArray());
+                DataSet dsAll = signbll.GetList(strWhere.ToString(), parms.ToArray());
                 if (dsPsn != null)
                 {
                     List<listSign> signlist = Common.TBToList<listSign>.ConvertToList(dsPsn.Tables[0]);
@@ -342,17 +383,43 @@ namespace app_act.Controllers
             {
                 Bizcs.BLL.act_signup signbll = new Bizcs.BLL.act_signup();
 
-                int sIndex = (reqModel.pageIndex - 1) * reqModel.pageSize + 1;
-                int eIndex = reqModel.pageIndex * reqModel.pageSize;
+                int pageIndex = Math.Max(reqModel.pageIndex, 1);
+                int pageSize = Math.Max(reqModel.pageSize, 10);
+                int sIndex = (pageIndex - 1) * pageSize + 1;
+                int eIndex = pageIndex * pageSize;
 
-                string subStrWhere1 = reqModel.kw == "" ? "" : " and actName like '%" + reqModel.kw + "%'";
-                string strWhere1 = reqModel.start == "" && reqModel.end == "" ? "" : " and signTime>='" + reqModel.start + " 00:00:00" + "' and signTime<='" + reqModel.end + " 23:59:59" + "' ";
-                string strWhere2 = reqModel.status == "" ? "" : " and signStatus=" + reqModel.status;
+                StringBuilder strWhere = new StringBuilder();
+                StringBuilder subStrWhere = new StringBuilder();
+                List<MySqlParameter> parms = new List<MySqlParameter>();
+                strWhere.Append(" 1=1 ");
+                if (!string.IsNullOrEmpty(reqModel.uid))
+                {
+                    strWhere.Append(" and psnPk= @psnPk ");
+                    parms.Add(new MySqlParameter("@psnPk", reqModel.uid));
+                }
+                if (!string.IsNullOrEmpty(reqModel.kw))
+                {
+                    subStrWhere.Append(" and actName like @actName ");
+                    parms.Add(new MySqlParameter("@actName", $"%{ reqModel.kw }%"));
+                }
+                if (!string.IsNullOrEmpty(reqModel.start) && DateTime.TryParse(reqModel.start, out var st))
+                {
+                    strWhere.Append(" and signTime>= @signTime1 ");
+                    parms.Add(new MySqlParameter("@signTime1", DateTime.Parse(reqModel.start)));
+                }
+                if (!string.IsNullOrEmpty(reqModel.end) && DateTime.TryParse(reqModel.end, out var et))
+                {
+                    strWhere.Append(" and signTime< @signTime2");
+                    parms.Add(new MySqlParameter("@signTime2", DateTime.Parse(reqModel.end).AddDays(1)));
+                }
+                if (!string.IsNullOrEmpty(reqModel.status))
+                {
+                    strWhere.Append(" and signStatus=@signStatus ");
+                    parms.Add(new MySqlParameter("@signStatus", reqModel.status));
+                }
 
-                string strWhere = " psnPk='" + reqModel.uid + "' " + strWhere1 + strWhere2;
-
-                DataSet dsPsn = signbll.GetListByPage(strWhere, subStrWhere1, "", sIndex, eIndex);
-                DataSet dsAll = signbll.GetList(strWhere);
+                DataSet dsPsn = signbll.GetListByPage(strWhere.ToString(), subStrWhere.ToString(), "", sIndex, eIndex, parms.ToArray());
+                DataSet dsAll = signbll.GetList(strWhere.ToString(), parms.ToArray());
                 if (dsPsn != null)
                 {
                     List<listSign> signlist = Common.TBToList<listSign>.ConvertToList(dsPsn.Tables[0]);
@@ -642,18 +709,42 @@ namespace app_act.Controllers
             {
                 Bizcs.BLL.act_activitymain actbll = new Bizcs.BLL.act_activitymain();
 
-                int sIndex = (reqModel.pageIndex - 1) * reqModel.pageSize + 1;
-                int eIndex = reqModel.pageIndex * reqModel.pageSize;
+                int pageIndex = Math.Max(reqModel.pageIndex, 1);
+                int pageSize = Math.Max(reqModel.pageSize, 10);
+                int sIndex = (pageIndex - 1) * pageSize + 1;
+                int eIndex = pageIndex * pageSize;
 
-                string strWhere1 = reqModel.kw == "" ? "" : " and actName like '%" + reqModel.kw + "%' ";
-                string strWhere2 = reqModel.type == "" ? "" : " and actType='" + reqModel.type + "' ";
-                string strWhere3 = reqModel.start == "" && reqModel.end == "" ? "" : " and actStartTime>='" + reqModel.start + " 00:00:00" + "' and startTime<='" + reqModel.end + " 23:59:59" + "' ";
-                string strWhere4 = reqModel.status == "" ? "" : " and actStatus=" + reqModel.status;
+                StringBuilder strWhere = new StringBuilder();
+                List<MySqlParameter> parms = new List<MySqlParameter>();
+                strWhere.Append(" 1=1 ");
+                if (!string.IsNullOrEmpty(reqModel.kw))
+                {
+                    strWhere.Append(" and actName like @actName ");
+                    parms.Add(new MySqlParameter("@actName", $"%{reqModel.kw}%" ));
+                }
+                if (!string.IsNullOrEmpty(reqModel.start) && DateTime.TryParse(reqModel.start, out var st))
+                {
+                    strWhere.Append(" and actStartTime>= @actStartTime1");
+                    parms.Add(new MySqlParameter("@actStartTime1", DateTime.Parse(reqModel.start)));
+                }
+                if (!string.IsNullOrEmpty(reqModel.end) && DateTime.TryParse(reqModel.end, out var et))
+                {
+                    strWhere.Append(" and actStartTime< @actStartTime2");
+                    parms.Add(new MySqlParameter("@actStartTime2", DateTime.Parse(reqModel.end).AddDays(1)));
+                }
+                if (!string.IsNullOrEmpty(reqModel.status))
+                {
+                    strWhere.Append(" and actStatus=@actStatus");
+                    parms.Add(new MySqlParameter("@actStatus", reqModel.status));
+                }
+                if (!string.IsNullOrEmpty(reqModel.type))
+                {
+                    strWhere.Append(" and actType=@actType");
+                    parms.Add(new MySqlParameter("@actType", reqModel.type));
+                }
 
-                string strWhere = " 1=1 " + strWhere1 + strWhere2 + strWhere3 + strWhere4;
-
-                DataSet dsPsn = actbll.GetListByPage(strWhere, "", sIndex, eIndex);
-                DataSet dsAll = actbll.GetList(strWhere);
+                DataSet dsPsn = actbll.GetListByPage(strWhere.ToString(), "", sIndex, eIndex,parms.ToArray());
+                DataSet dsAll = actbll.GetList(strWhere.ToString(),parms.ToArray());
                 if (dsPsn != null)
                 {
                     List<act_activitymain> actlist = Common.TBToList<act_activitymain>.ConvertToList(dsPsn.Tables[0]);
@@ -689,15 +780,37 @@ namespace app_act.Controllers
             {
                 Bizcs.BLL.act_activitymain actbll = new Bizcs.BLL.act_activitymain();
 
-                string strWhere1 = reqModel.kw == "" ? "" : " and actName like '%" + reqModel.kw + "%' ";
-                string strWhere2 = reqModel.type == "" ? "" : " and actType='" + reqModel.type + "' ";
-                string strWhere3 = reqModel.start == "" && reqModel.end == "" ? "" : " and actStartTime>='" + reqModel.start + " 00:00:00" + "' and startTime<='" + reqModel.end + " 23:59:59" + "' ";
-                string strWhere4 = reqModel.status == "" ? "" : " and actStatus=" + reqModel.status;
+                StringBuilder strWhere = new StringBuilder();
+                List<MySqlParameter> parms = new List<MySqlParameter>();
+                strWhere.Append(" 1=1 ");
+                if (!string.IsNullOrEmpty(reqModel.kw))
+                {
+                    strWhere.Append(" and actName like @actName ");
+                    parms.Add(new MySqlParameter("@actName", $"%{reqModel.kw}%"));
+                }
+                if (!string.IsNullOrEmpty(reqModel.start) && DateTime.TryParse(reqModel.start, out var st))
+                {
+                    strWhere.Append(" and actStartTime>= @actStartTime1");
+                    parms.Add(new MySqlParameter("@actStartTime1", DateTime.Parse(reqModel.start)));
+                }
+                if (!string.IsNullOrEmpty(reqModel.end) && DateTime.TryParse(reqModel.end, out var et))
+                {
+                    strWhere.Append(" and actStartTime< @actStartTime2");
+                    parms.Add(new MySqlParameter("@actStartTime2", DateTime.Parse(reqModel.end).AddDays(1)));
+                }
+                if (!string.IsNullOrEmpty(reqModel.status))
+                {
+                    strWhere.Append(" and actStatus=@actStatus");
+                    parms.Add(new MySqlParameter("@actStatus", reqModel.status));
+                }
+                if (!string.IsNullOrEmpty(reqModel.type))
+                {
+                    strWhere.Append(" and actType=@actType");
+                    parms.Add(new MySqlParameter("@actType", reqModel.type));
+                }
 
-                string strWhere = " 1=1 " + strWhere1 + strWhere2 + strWhere3 + strWhere4;
-
-                DataSet dsObj = actbll.exportList(strWhere," actStartTime desc ");
-                if (dsObj.Tables[0] != null && dsObj.Tables[0].Rows.Count>0)
+                DataSet dsObj = actbll.exportList(strWhere.ToString(), " actStartTime desc ",parms.ToArray());
+                if (dsObj.Tables[0] != null && dsObj.Tables[0].Rows.Count > 0)
                 {
                     string fileInfo = Common.ExcelHelper.DataToExcel(dsObj.Tables[0], "list" + DateTime.Now.ToString("yyyyMMddhhmmss") + ".xlsx", "Activity List");
                     string filePath = Directory.GetCurrentDirectory() + fileInfo;

@@ -14,11 +14,11 @@ namespace app_act.Controllers
         public async Task<IActionResult> handShake([FromBody] jumpkey k)
         {
             string userInfo = "";
-            if (k.key != "" || k.key != null)
+            if (!string.IsNullOrEmpty(k.key))
             {
                 userInfo = await Common.requestHelper.postRequest
                     (
-                    "/api/Appserv/handShake", 
+                    "/api/AppServ/handShake", 
                     "{\"aukey\":\"" + Common.requestHelper.genAukey() + "\",\"args\":\"" + k.key + "\"}"
                     );
             }

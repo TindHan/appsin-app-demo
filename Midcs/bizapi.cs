@@ -2,6 +2,50 @@
 
 namespace app_act.Midcs
 {
+
+    public class leaveFlow
+    {
+        public string aukey { get; set; }
+        public string templatePK { get; set; }
+        public string flowName { get; set; }
+        public string flowDesc { get; set; }
+        public string contentUrl { get; set; }
+        public int? int1Value { get; set; }
+        public string? str1Value { get; set; }
+        public DateTime? date1Value { get; set; }
+        public string psnPK { get; set; }
+        public string createPsnPK { get; set; }
+    }
+    public class leaveEdit
+    {
+        public int leaveID { get; set; }
+        public string psnPK { get; set; }
+        public string leaveType { get; set; }
+        public DateTime startTime { get; set; }
+        public DateTime endTime { get; set; }
+        public decimal leaveDays { get; set; }
+        public string leaveReason { get; set; }
+        public int leaveStatus { get; set; }
+    }
+    public class leaveList
+    {
+        public int id { get; set; }
+        public string leavePK { get; set; }
+        public string psnPK { get; set; }
+        public string psnName { get; set; }
+        public string unitName { get; set; }
+        public string deptName { get; set; }
+        public string postName { get; set; }
+        public string leaveType { get; set; }
+        public DateTime startTime { get; set; }
+        public DateTime endTime { get; set; }
+        public decimal leaveDays { get; set; }
+        public string createPsnPK { get; set; }
+        public DateTime createTime { get; set; }
+        public int approveStatus { get; set; }
+        public int leaveStatus { get; set; }
+        public string leaveReason { get; set; }
+    }
     public class editActivity
     {
         public string actName { get; set; }

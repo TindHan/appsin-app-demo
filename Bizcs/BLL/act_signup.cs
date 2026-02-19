@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using MySql.Data.MySqlClient;
+using System.Data;
 
 namespace app_act.Bizcs.BLL
 {
@@ -64,6 +65,11 @@ namespace app_act.Bizcs.BLL
         {
             return dal.GetList(strWhere);
         }
+
+        public DataSet GetList(string strWhere, params MySqlParameter[] parms)
+        {
+            return dal.GetList(strWhere, parms);
+        }
         /// <summary>
         /// 获得前几行数据
         /// </summary>
@@ -117,19 +123,15 @@ namespace app_act.Bizcs.BLL
             return dal.GetRecordCount(strWhere);
         }
 
-        /// <summary>
-        /// 分页获取数据列表
-        /// </summary>
-        //public DataSet GetList(int PageSize,int PageIndex,string strWhere)
-        //{
-        //return dal.GetList(PageSize,PageIndex,strWhere);
-        //}
-
         #endregion  BasicMethod
         #region  ExtensionMethod
         public DataSet exportList(string strWhere)
         {
             return dal.exportList(strWhere);
+        }
+        public DataSet exportList(string strWhere, params MySqlParameter[] parms)
+        {
+            return dal.exportList(strWhere, parms);
         }
         /// <summary>
         /// 分页获取数据列表
@@ -137,6 +139,11 @@ namespace app_act.Bizcs.BLL
         public DataSet GetListByPage(string strWhere, string subStrWhere, string orderby, int startIndex, int endIndex)
         {
             return dal.GetListByPage(strWhere, subStrWhere, orderby, startIndex, endIndex);
+        }
+
+        public DataSet GetListByPage(string strWhere, string subStrWhere, string orderby, int startIndex, int endIndex, params MySqlParameter[] parms)
+        {
+            return dal.GetListByPage(strWhere, subStrWhere, orderby, startIndex, endIndex, parms);
         }
 
         #endregion  ExtensionMethod

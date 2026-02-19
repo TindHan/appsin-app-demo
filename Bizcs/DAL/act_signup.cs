@@ -238,6 +238,18 @@ namespace app_act.Bizcs.DAL
             return DbHelperSQL.Query(strSql.ToString());
         }
 
+        public DataSet GetList(string strWhere, params MySqlParameter[] parms)
+        {
+            StringBuilder strSql = new StringBuilder();
+            strSql.Append("select signID,actID,psnPK,signTime,signWay,isPay,isConfirm,signStatus ");
+            strSql.Append(" FROM act_signup ");
+            if (strWhere.Trim() != "")
+            {
+                strSql.Append(" where " + strWhere);
+            }
+            return DbHelperSQL.Query(strSql.ToString(),parms);
+        }
+
         /// <summary>
         /// 获得前几行数据
         /// </summary>
@@ -305,6 +317,29 @@ namespace app_act.Bizcs.DAL
 
             return DbHelperSQL.Query(strSql.ToString());
         }
+
+        /// <summary>
+        /// 分页获取数据列表
+        /// </summary>
+        /// 
+        public DataSet exportList(string strWhere, params MySqlParameter[] parms)
+        {
+            StringBuilder strSql = new StringBuilder();
+            strSql.Append(" SELECT ");
+            strSql.Append(" (select actName from act_activityMain where act_activityMain.actID=act_signup.actID) as activityName,");
+            strSql.Append(" (select unitName from act_psnMain where act_psnMain.psnPk=act_signup.psnPk) as unitName,");
+            strSql.Append(" (select deptName from act_psnMain where act_psnMain.psnPk=act_signup.psnPk) as deptName,");
+            strSql.Append(" (select postName from act_psnMain where act_psnMain.psnPk=act_signup.psnPk) as postName,");
+            strSql.Append(" (select psnName from act_psnMain where act_psnMain.psnPk=act_signup.psnPk) as psnName,");
+            strSql.Append(" signTime,signWay,isPay,isConfirm");
+            strSql.Append("  from act_signup ");
+            if (!string.IsNullOrEmpty(strWhere.Trim()))
+            {
+                strSql.Append(" WHERE " + strWhere);
+            }
+
+            return DbHelperSQL.Query(strSql.ToString(),parms);
+        }
         /// <summary>
         /// 分页获取数据列表
         /// </summary>
@@ -344,6 +379,47 @@ namespace app_act.Bizcs.DAL
             }
 
             return DbHelperSQL.Query(strSql.ToString());
+        }
+
+        /// <summary>
+        /// 分页获取数据列表
+        /// </summary>
+        /// 
+        public DataSet GetListByPage(string strWhere, string subStrWhere, string orderby, int startIndex, int endIndex, params MySqlParameter[] parms)
+        {
+            StringBuilder strSql = new StringBuilder();
+            strSql.Append("SELECT * FROM ( ");
+            strSql.Append(" SELECT *,signID as `key`, ");
+            strSql.Append(" (select actName from act_activityMain where act_activityMain.actID=act_signup.actID) as actName,");
+            strSql.Append(" (select actStartTime from act_activityMain where act_activityMain.actID=act_signup.actID) as startTime,");
+            strSql.Append(" (select actEndTime from act_activityMain where act_activityMain.actID=act_signup.actID) as endTime,");
+            strSql.Append(" (select actAddr from act_activityMain where act_activityMain.actID=act_signup.actID) as address,");
+            strSql.Append(" (select unitName from act_psnMain where act_psnMain.psnPk=act_signup.psnPk) as unitName,");
+            strSql.Append(" (select deptName from act_psnMain where act_psnMain.psnPk=act_signup.psnPk) as deptName,");
+            strSql.Append(" (select postName from act_psnMain where act_psnMain.psnPk=act_signup.psnPk) as postName,");
+            strSql.Append(" (select psnName from act_psnMain where act_psnMain.psnPk=act_signup.psnPk) as psnName,");
+            strSql.Append("  ROW_NUMBER() OVER (");
+            if (!string.IsNullOrEmpty(orderby.Trim()))
+            {
+                strSql.Append("order by " + orderby);
+            }
+            else
+            {
+                strSql.Append("order by signID desc");
+            }
+            strSql.Append(")AS rnum from act_signup ");
+            if (!string.IsNullOrEmpty(strWhere.Trim()))
+            {
+                strSql.Append(" WHERE " + strWhere);
+            }
+            strSql.Append(" ) as TT");
+            strSql.AppendFormat(" WHERE rnum between {0} and {1}", startIndex, endIndex);
+            if (!string.IsNullOrEmpty(subStrWhere.Trim()))
+            {
+                strSql.Append(" " + subStrWhere);
+            }
+
+            return DbHelperSQL.Query(strSql.ToString(),parms);
         }
         #endregion  ExtensionMethod
     }

@@ -39,13 +39,18 @@ namespace app_act.Common
         {
             string appSID = "52021156";
             string appSecret = "wGmt9o5ucmzLpszm";
-            string nowTime = DateTime.Now.ToString("yyyyMMddhh");
-
+            long timestamp = GetCurrentTimestampSeconds();
             string pubkey = "MEgCQQDOGE80bY9nK8Akxw+CXmsHqF7y/kPMbAim/M9hm3w0TN/h1cFONdo7OaWF3hBRAaTYwbdTTiTQjvgi7j31ExbdAgMBAAE=";
-
-            string aukey = appSID + CryptRSA.RsaHelper.Encrypt(pubkey, appSID + ";" + appSecret + ";" + nowTime);
-
+            string aukey = appSID + CryptRSA.RsaHelper.Encrypt(pubkey, appSID + ";" + appSecret + ";" + timestamp);
             return aukey;
+        }
+
+        public static long GetCurrentTimestampSeconds()
+        {
+            DateTime startTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            DateTime currentTime = DateTime.UtcNow;
+            TimeSpan timeSpan = currentTime - startTime;
+            return (long)timeSpan.TotalSeconds;
         }
     }
 }

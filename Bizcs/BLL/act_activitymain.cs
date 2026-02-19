@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using MySql.Data.MySqlClient;
+using System.Data;
 
 namespace app_act.Bizcs.BLL
 {
@@ -64,6 +65,11 @@ namespace app_act.Bizcs.BLL
         {
             return dal.GetList(strWhere);
         }
+
+        public DataSet GetList(string strWhere, params MySqlParameter[] parms)
+        {
+            return dal.GetList(strWhere, parms);
+        }
         /// <summary>
         /// 获得前几行数据
         /// </summary>
@@ -126,6 +132,15 @@ namespace app_act.Bizcs.BLL
 
         #endregion  BasicMethod
         #region  ExtensionMethod
+
+        public DataSet GetListByPage(string strWhere, string orderby, int startIndex, int endIndex, params MySqlParameter[] parms)
+        {
+            return dal.GetListByPage(strWhere, orderby, startIndex, endIndex, parms);
+        }
+        public DataSet exportList(string strWhere, string orderby, params MySqlParameter[] parms)
+        {
+            return dal.exportList(strWhere, orderby, parms);
+        }
         public DataSet exportList(string strWhere, string orderby)
         {
             return dal.exportList(strWhere,orderby);
